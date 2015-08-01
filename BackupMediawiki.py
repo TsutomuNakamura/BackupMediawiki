@@ -17,12 +17,12 @@ class BackupMediawiki:
     config = None
 
     # Config parameters
-    workdir = None
-    wikidir = None
-    local_settings_file = None
-    backup_local_settings_file = None
+    workdir                     = None
+    wikidir                     = None
+    local_settings_file         = None
+    backup_local_settings_file  = None
     current_local_settings_file = None
-    backup_max_retry_num = None
+    backup_max_retry_num        = None
 
     # DB parameters
     wg_db_server            = None
@@ -52,7 +52,7 @@ class BackupMediawiki:
         self.files_dump_dir         = self.config['files_dump_dir']
 
         self.backup_max_retry_num   = self.config['backup_max_retry_num']
-
+        self.encoding               = self.config['encoding']
 
     def execute(self):
 
@@ -75,20 +75,15 @@ class BackupMediawiki:
             self.wg_db_name,
             self.wg_db_user,
             self.wg_db_password,
-            self.db_dump_dir,
             default_character_set=self.default_character_set
         ).execute()
 
-        # BackupMySQL(
-        #     self.wg_db_server,
-        #     self.wg_db_name,
-        #     self.wg_db_user,
-        #     self.wg_db_password,
-        #     None
-        # ).execute()
-
-
         # Backup mediawiki file data
+        BackupMediawikiFiles(
+            self.config
+        ).execute()
+
+        # TODO: catch exception
 
     def backup_local_settings(self):
         """
