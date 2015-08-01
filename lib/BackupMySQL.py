@@ -72,6 +72,3 @@ class BackupMySQL:
                 + "character_set" + self.default_character_set + "]")
 
 
-
-
-
