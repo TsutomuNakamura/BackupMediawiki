@@ -1,0 +1,14 @@
+workdir: /var/mediawiki-backup/wiki/
+
+wikidir: /var/www/html/wiki/
+
+local_settings_file: LocalSettings.php
+
+db_dump_dir: /var/mediawiki-backup/wiki/db
+
+mysql_backup_file_prefix: mysql-dump
+
+files_dump_dir: /var/mediawiki-backup/wiki/files
+
+backup_max_retry_num: 5
+
