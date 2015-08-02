@@ -4,8 +4,9 @@ import subprocess
 import tarfile
 
 from lib.Command import Command
+from lib.Backup  import Backup
 
-class BackupMySQL:
+class BackupMySQL(Backup):
 
     # DB parameters
     config                  = None
@@ -17,9 +18,10 @@ class BackupMySQL:
     mysqldump_file          = None
     default_character_set   = None
 
-    mysqldump_file_prefix   = None
-    mysqldump_dir           = None
-    mysqldump_compression   = None
+    mysqldump_file_prefix       = None
+    mysqldump_dir               = None
+    mysqldump_compression       = None
+    mysqldump_generation_num    = None
 
     def __init__(
             self, config, wg_db_server, wg_db_name
@@ -35,9 +37,10 @@ class BackupMySQL:
         self.mysqldump_file         = mysqldump_file
         self.default_character_set  = default_character_set
 
-        self.mysqldump_file_prefix  = self.config['mysqldump_file_prefix']
-        self.mysqldump_dir          = self.config['mysqldump_dir']
-        self.mysqldump_compression  = self.config['mysqldump_compression']
+        self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
+        self.mysqldump_dir              = self.config['mysqldump_dir']
+        self.mysqldump_compression      = self.config['mysqldump_compression']
+        self.mysqldump_generation_num   = self.config['mysqldump_generation_num']
 
         if self.mysqldump_compression == "gz":
             self.mysqldump_extension = ".tar.gz"
@@ -81,6 +84,11 @@ class BackupMySQL:
                     , "w:" + self.mysqldump_compression) as tar:
             tar.add(self.mysqldump_file)
 
+        os.remove(self.mysqldump_file)
+
         print("Compress mysql data was succeeded (file="
             + self.mysqldump_file + self.mysqldump_extension + ")")
+
+        self.remove_out_dated(
+            self.mysqldump_dir, self.mysqldump_file_prefix + "*", self.mysqldump_generation_num)
 

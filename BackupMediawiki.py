@@ -28,10 +28,12 @@ class BackupMediawiki:
     mysqldump_dir               = None
     mysqldump_file_prefix       = None
     mysqldump_file              = None
+    mysqldump_compression       = None
 
     mediawiki_backup_dir            = None
     mediawiki_backup_file_prefix    = None
     mediawiki_backup_file           = None
+    mediawiki_compression           = None
 
     backup_max_retry_num        = None
 
@@ -61,9 +63,11 @@ class BackupMediawiki:
 
         self.mysqldump_dir              = self.config['mysqldump_dir']
         self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
+        self.mysqldump_compression      = self.config['mysqldump_compression']
 
         self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
+        self.mediawiki_compression          = self.config['mediawiki_compression']
 
         self.define_file_name_retry_num = self.config['define_file_name_retry_num']
         self.encoding                   = self.config['encoding']
@@ -96,9 +100,14 @@ class BackupMediawiki:
                 last_try_filename = self.mysqldump_file
                 sleep(1); continue
 
+            if os.path.exists(self.mysqldump_file + ".tar." + self.mysqldump_compression):
+                last_try_filename = self.mysqldump_file + ".tar." + self.mysqldump_compression
+                sleep(1); continue
+
             self.mediawiki_backup_file = os.path.join(
                     self.mediawiki_backup_dir
-                    , self.mediawiki_backup_file_prefix + "." + date_suffix)
+                    , self.mediawiki_backup_file_prefix
+                    + "." + date_suffix + ".tar." + self.mediawiki_compression)
 
             if os.path.exists(self.mediawiki_backup_file):
                 last_try_filename = self.mediawiki_backup_file

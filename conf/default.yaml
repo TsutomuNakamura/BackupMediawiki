@@ -21,7 +21,7 @@ mysqldump_file_prefix: mysql-dump
 mysqldump_compression: gz
 
 # Generation to save mysqldump
-mysqldump_generation: 30
+mysqldump_generation_num: 30
 
 #-----------------------------------------------------------
 # About mediawiki files

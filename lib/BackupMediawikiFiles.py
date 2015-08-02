@@ -18,10 +18,10 @@ class BackupMediawikiFiles:
 
         self.mediawiki_backup_file      = mediawiki_backup_file
 
-        self.wikidir                    = config['wikidir']
-        self.mediawiki_backup_dir       = config['mediawiki_backup_dir']
-        self.mediawiki_backup_file_prefix    = config['mediawiki_backup_file_prefix']
-        self.mediawiki_compression      = config['mediawiki_compression']
+        self.wikidir                        = config['wikidir']
+        self.mediawiki_backup_dir           = config['mediawiki_backup_dir']
+        self.mediawiki_backup_file_prefix   = config['mediawiki_backup_file_prefix']
+        self.mediawiki_compression          = config['mediawiki_compression']
 
         if self.mediawiki_compression == "gz":
             self.mediawiki_backup_extension = ".tar.gz"
