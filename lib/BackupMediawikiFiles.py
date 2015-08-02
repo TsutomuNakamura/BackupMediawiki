@@ -1,7 +1,9 @@
 import os
 import tarfile
 
-class BackupMediawikiFiles:
+from lib.Backup import Backup
+
+class BackupMediawikiFiles(Backup):
 
     config                          = None
 
@@ -11,6 +13,7 @@ class BackupMediawikiFiles:
     mediawiki_backup_dir            = None
     mediawiki_backup_file_prefix    = None
     mediawiki_compression           = None
+    mediawiki_backup_generation     = None
 
     def __init__(self, config, mediawiki_backup_file):
 
@@ -22,6 +25,7 @@ class BackupMediawikiFiles:
         self.mediawiki_backup_dir           = config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = config['mediawiki_backup_file_prefix']
         self.mediawiki_compression          = config['mediawiki_compression']
+        self.mediawiki_backup_generation    = config['mediawiki_backup_generation']
 
         if self.mediawiki_compression == "gz":
             self.mediawiki_backup_extension = ".tar.gz"
@@ -29,7 +33,6 @@ class BackupMediawikiFiles:
             self.mediawiki_backup_extension = ".tar.bz2"
         else:
             self.mediawiki_backup_extension = ".tar"
-
 
     def execute(self):
         """
@@ -48,6 +51,11 @@ class BackupMediawikiFiles:
             # Throws exception if archiving is failed
             tar.add(self.wikidir, arcname=os.path.basename(self.wikidir))
         print("Backuping mediawiki files to " + self.mediawiki_backup_file)
+
+        # Remove out dated backup files
+        self.remove_out_dated(
+            self.mediawiki_backup_dir
+            , self.mediawiki_backup_file_prefix + "*", self.mediawiki_backup_generation)
 
 if __name__ == "__main__":
     import yaml

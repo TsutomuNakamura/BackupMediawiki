@@ -13,9 +13,6 @@ class Backup:
         """
         Remove out dated backup files
         """
-        # TODO:
-        print("search_dir: " + search_dir)
-        print("file_glob: " + file_glob)
         files = glob.glob(os.path.join(search_dir, file_glob))
 
         files_length = len(files)
@@ -24,6 +21,6 @@ class Backup:
 
             for index in range(files_length - generation_num):
                 # Delete out dated file
-                print("Remove : " + files[index])
+                print("Remove out dated file: " + files[index])
                 os.remove(files[index])
 
