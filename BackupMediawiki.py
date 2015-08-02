@@ -21,8 +21,18 @@ class BackupMediawiki:
     workdir                     = None
     wikidir                     = None
     local_settings_file         = None
+
     backup_local_settings_file  = None
     current_local_settings_file = None
+
+    mysqldump_dir               = None
+    mysqldump_file_prefix       = None
+    mysqldump_file              = None
+
+    mediawiki_backup_dir            = None
+    mediawiki_backup_file_prefix    = None
+    mediawiki_backup_file           = None
+
     backup_max_retry_num        = None
 
     # DB parameters
@@ -45,12 +55,22 @@ class BackupMediawiki:
         with open("./conf/default.yaml", 'r') as f:
             self.config = yaml.load(f.read())
 
-        self.workdir                = self.config['workdir']
-        self.wikidir                = self.config['wikidir']
-        self.local_settings_file    = self.config['local_settings_file']
+        self.workdir                    = self.config['workdir']
+        self.wikidir                    = self.config['wikidir']
+        self.local_settings_file        = self.config['local_settings_file']
 
-        self.backup_max_retry_num   = self.config['backup_max_retry_num']
-        self.encoding               = self.config['encoding']
+        self.mysqldump_dir              = self.config['mysqldump_dir']
+        self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
+
+        self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
+        self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
+
+        self.define_file_name_retry_num = self.config['define_file_name_retry_num']
+        self.encoding                   = self.config['encoding']
+
+        if self.define_file_name_retry_num < 0:
+            self.define_file_name_retry_num = 0
+
 
     def execute(self):
 
@@ -59,7 +79,37 @@ class BackupMediawiki:
             print("Creating directory " + self.workdir)
             os.makedirs(self.workdir)
 
-        print("workdir: " + self.config['workdir'])
+        for retry_count in range(self.define_file_name_retry_num + 1):
+            date_suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+            self.backup_local_settings_file = os.path.join(
+                    self.workdir, self.local_settings_file + "." + date_suffix)
+
+            if os.path.exists(self.backup_local_settings_file):
+                last_try_filename = self.backup_local_settings_file
+                sleep(1); continue
+
+            self.mysqldump_file = os.path.join(
+                    self.mysqldump_dir, self.mysqldump_file_prefix + "." + date_suffix)
+
+            if os.path.exists(self.mysqldump_file):
+                last_try_filename = self.mysqldump_file
+                sleep(1); continue
+
+            self.mediawiki_backup_file = os.path.join(
+                    self.mediawiki_backup_dir
+                    , self.mediawiki_backup_file_prefix + "." + date_suffix)
+
+            if os.path.exists(self.mediawiki_backup_file):
+                last_try_filename = self.mediawiki_backup_file
+                sleep(1); continue
+
+            break
+
+        # Check retry count
+        if retry_count > self.define_file_name_retry_num:
+             raise Exception("Backup is failed. File "
+                    + self.backup_local_settings_file + " is already existed.")
 
         # Backup LocalSettings
         self.backup_local_settings()
@@ -74,12 +124,14 @@ class BackupMediawiki:
             self.wg_db_name,
             self.wg_db_user,
             self.wg_db_password,
+            self.mysqldump_file,
             default_character_set=self.default_character_set
         ).execute()
 
         # Backup mediawiki file data
         BackupMediawikiFiles(
-            self.config
+            self.config,
+            self.mediawiki_backup_file
         ).execute()
 
         # TODO: catch exception
@@ -89,21 +141,11 @@ class BackupMediawiki:
         Backup LocalSettings.php in workdir.
         """
 
-        for retry_count in range(5):
-            date_suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        retry_count                         = -1
+        last_try_filename                   = None
+        self.current_local_settings_file    = os.path.join(
+                                                    self.wikidir, self.local_settings_file)
 
-            self.current_local_settings_file = os.path.join(
-                    self.wikidir, self.local_settings_file)
-            self.backup_local_settings_file = os.path.join(
-                    self.workdir, self.local_settings_file + "." + date_suffix)
-
-            if not os.path.exists(self.backup_local_settings_file):
-                break
-            elif retry_count == self.backup_max_try_num:  # Retry over
-                raise Exception("Backup " + self.current_local_settings_file
-                        + " is failed. File " + self.backup_local_settings_file + " is already existed.")
-
-            time.sleep(1)
 
         # Copy LocalSettings.php to workdir. Throw Exception when copy failed
         shutil.copyfile(self.current_local_settings_file, self.backup_local_settings_file)

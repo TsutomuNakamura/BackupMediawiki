@@ -7,6 +7,10 @@ wikidir: /var/www/html/wiki/
 # Setting file name of mediawiki
 local_settings_file: LocalSettings.php
 
+#-----------------------------------------------------------
+# About MySQL or MariaDB data
+#-----------------------------------------------------------
+
 # Location of mysql db backup
 mysqldump_dir: /var/mediawiki-backup/wiki/db
 
@@ -16,17 +20,27 @@ mysqldump_file_prefix: mysql-dump
 # Prefix of mysqldump file
 mysqldump_compression: gz
 
+# Generation to save mysqldump
+mysqldump_generation: 30
+
+#-----------------------------------------------------------
+# About mediawiki files
+#-----------------------------------------------------------
 
 # Location of mediawiki files backup
 mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
 
 # Prefix of mediawiki file
-mediawiki_backup_prefix: mediawiki-backup
+mediawiki_backup_file_prefix: mediawiki-backup
 
 # Compression method of mediawiki files backup
 mediawiki_compression: gz
 
-backup_max_retry_num: 5
+# Generation to save mediawiki backup
+mediawiki_backup_generation: 30
+
+# Retry num for determin backup file suffix
+define_file_name_retry_num: 5
 
 encoding: utf-8
 
