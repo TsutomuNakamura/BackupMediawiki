@@ -1,16 +1,30 @@
+# Location of backup working directory
 workdir: /var/mediawiki-backup/wiki/
 
+# Location of mediawiki web application
 wikidir: /var/www/html/wiki/
 
+# Setting file name of mediawiki
 local_settings_file: LocalSettings.php
 
-db_dump_dir: /var/mediawiki-backup/wiki/db
+# Location of mysql db backup
+mysqldump_dir: /var/mediawiki-backup/wiki/db
 
-mediawiki_files_backup_dir: /var/mediawiki-backup/wiki/files
+# Prefix of mysqldump file
+mysqldump_file_prefix: mysql-dump
 
-mysql_dump_file_prefix: mysql-dump
+# Prefix of mysqldump file
+mysqldump_compression: gz
 
-files_dump_dir: /var/mediawiki-backup/wiki/files
+
+# Location of mediawiki files backup
+mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
+
+# Prefix of mediawiki file
+mediawiki_backup_prefix: mediawiki-backup
+
+# Compression method of mediawiki files backup
+mediawiki_compression: gz
 
 backup_max_retry_num: 5
 

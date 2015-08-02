@@ -3,20 +3,41 @@ import tarfile
 
 class BackupMediawikiFiles:
 
-    wikidir                     = None
-    mediawiki_files_backup_dir  = None
+    wikidir                 = None
+    mediawiki_backup_dir    = None
+    mediawiki_backup_prefix = None
+    mediawiki_compression   = None
 
     def __init__(self, config):
         self.wikidir                    = config['wikidir']
-        self.mediawiki_files_backup_dir = config['mediawiki_files_backup_dir']
+        self.mediawiki_backup_dir       = config['mediawiki_backup_dir']
+        self.mediawiki_backup_prefix    = config['mediawiki_backup_prefix']
+        self.mediawiki_compression      = config['mediawiki_compression']
 
-        print("self.mediawiki_files_backup_dir: " + self.mediawiki_files_backup_dir)
+        if self.mediawiki_compression == "gz":
+            self.mediawiki_backup_extension = ".tar.gz"
+        elif self.mediawiki_compression == "bz2":
+            self.mediawiki_backup_extension = ".tar.bz2"
+        else:
+            self.mediawiki_backup_extension = ".tar"
+
 
     def execute(self):
-        with tarfile.open("/var/tmp/mediawiki.tar.gz", "w:gz") as tar:
-            tar.add("/var/www/html/wiki/", arcname=os.path.basename("/var/www/html/wiki/"))
+        """
+        Backuping mediawiki files
+        """
+        # Creating backup dir and dump file name
+        if not os.path.exists(self.mediawiki_backup_dir):
+            print("Creating directory -> " + self.mediawiki_backup_dir)
+            os.makedirs(self.mediawiki_backup_dir)
 
-        pass
+        with tarfile.open(
+                os.path.join(self.mediawiki_backup_dir
+                    , self.mediawiki_backup_prefix + self.mediawiki_backup_extension)
+                    , "w:" + self.mediawiki_compression) as tar:
+
+            # Throws exception if archiving is failed
+            tar.add(self.wikidir, arcname=os.path.basename(self.wikidir))
 
 if __name__ == "__main__":
     import yaml

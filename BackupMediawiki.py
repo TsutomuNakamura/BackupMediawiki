@@ -7,6 +7,7 @@ import time
 import yaml
 
 from lib.BackupMySQL import BackupMySQL
+from lib.BackupMediawikiFiles import BackupMediawikiFiles
 
 class BackupMediawiki:
 
@@ -38,18 +39,15 @@ class BackupMediawiki:
     reg_wg_db_password          = re.compile("^\$wgDBpassword\s*=\s*\"(.*)\";\s*$")
     reg_default_character_set   = re.compile("^\$wgDBTableOptions\s*=\s*\".*DEFAULT CHARSET\s*=\s*([a-z0-9_]+).*\";\s*$")
 
-    reg_wg_readonly     = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
+    reg_wg_readonly             = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
 
     def __init__(self):
-        # TODO:
         with open("./conf/default.yaml", 'r') as f:
             self.config = yaml.load(f.read())
 
         self.workdir                = self.config['workdir']
         self.wikidir                = self.config['wikidir']
         self.local_settings_file    = self.config['local_settings_file']
-        self.db_dump_dir            = self.config['db_dump_dir']
-        self.files_dump_dir         = self.config['files_dump_dir']
 
         self.backup_max_retry_num   = self.config['backup_max_retry_num']
         self.encoding               = self.config['encoding']
@@ -69,6 +67,7 @@ class BackupMediawiki:
         # Change the mode of the mediawiki to read only
         self.change_wiki_mode_readonly(BackupMediawiki.MODE_READONLY)
 
+        # Backup mysql data
         BackupMySQL(
             self.config,
             self.wg_db_server,
