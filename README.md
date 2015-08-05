@@ -1,3 +1,3 @@
 # BackupMediawiki
-under construction
+This is a script to backup your Mediawiki data.
 
