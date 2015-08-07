@@ -18,31 +18,31 @@ class BackupMediawiki:
     config = None
 
     # Config parameters
-    workdir                     = None
-    wikidir                     = None
-    local_settings_file         = None
+    workdir                         = None
+    wikidir                         = None
+    local_settings_file             = None
 
-    backup_local_settings_file  = None
-    current_local_settings_file = None
+    backup_local_settings_file      = None
+    current_local_settings_file     = None
 
-    mysqldump_dir               = None
-    mysqldump_file_prefix       = None
-    mysqldump_file              = None
-    mysqldump_compression       = None
+    mysqldump_dir                   = None
+    mysqldump_file_prefix           = None
+    mysqldump_file                  = None
+    mysqldump_compression           = None
 
     mediawiki_backup_dir            = None
     mediawiki_backup_file_prefix    = None
     mediawiki_backup_file           = None
     mediawiki_compression           = None
 
-    backup_max_retry_num        = None
+    backup_max_retry_num            = None
 
     # DB parameters
-    wg_db_server            = None
-    wg_db_name              = None
-    wg_db_user              = None
-    wg_db_password          = None
-    default_character_set   = None
+    wg_db_server                    = None
+    wg_db_name                      = None
+    wg_db_user                      = None
+    wg_db_password                  = None
+    default_character_set           = None
 
     # Regular expression for getting db parameters.
     reg_wg_db_server            = re.compile("^\$wgDBserver\s*=\s*\"(.*)\";\s*$")
@@ -143,7 +143,10 @@ class BackupMediawiki:
             self.mediawiki_backup_file
         ).execute()
 
-        # TODO: catch exception
+        # Restore LocalSettings if succeeded
+        shutil.copyfile(self.backup_local_settings_file, self.current_local_settings_file)
+        os.remove(self.backup_local_settings_file)
+
 
     def backup_local_settings(self):
         """
