@@ -7,6 +7,7 @@ import time
 import yaml
 
 from lib.BackupMySQL import BackupMySQL
+from lib.BackupMediawikiFiles import BackupMediawikiFiles
 
 class BackupMediawiki:
 
@@ -17,19 +18,31 @@ class BackupMediawiki:
     config = None
 
     # Config parameters
-    workdir = None
-    wikidir = None
-    local_settings_file = None
-    backup_local_settings_file = None
-    current_local_settings_file = None
-    backup_max_retry_num = None
+    workdir                         = None
+    wikidir                         = None
+    local_settings_file             = None
+
+    backup_local_settings_file      = None
+    current_local_settings_file     = None
+
+    mysqldump_dir                   = None
+    mysqldump_file_prefix           = None
+    mysqldump_file                  = None
+    mysqldump_compression           = None
+
+    mediawiki_backup_dir            = None
+    mediawiki_backup_file_prefix    = None
+    mediawiki_backup_file           = None
+    mediawiki_compression           = None
+
+    backup_max_retry_num            = None
 
     # DB parameters
-    wg_db_server            = None
-    wg_db_name              = None
-    wg_db_user              = None
-    wg_db_password          = None
-    default_character_set   = None
+    wg_db_server                    = None
+    wg_db_name                      = None
+    wg_db_user                      = None
+    wg_db_password                  = None
+    default_character_set           = None
 
     # Regular expression for getting db parameters.
     reg_wg_db_server            = re.compile("^\$wgDBserver\s*=\s*\"(.*)\";\s*$")
@@ -38,20 +51,29 @@ class BackupMediawiki:
     reg_wg_db_password          = re.compile("^\$wgDBpassword\s*=\s*\"(.*)\";\s*$")
     reg_default_character_set   = re.compile("^\$wgDBTableOptions\s*=\s*\".*DEFAULT CHARSET\s*=\s*([a-z0-9_]+).*\";\s*$")
 
-    reg_wg_readonly     = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
+    reg_wg_readonly             = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
 
     def __init__(self):
-        # TODO:
         with open("./conf/default.yaml", 'r') as f:
             self.config = yaml.load(f.read())
 
-        self.workdir                = self.config['workdir']
-        self.wikidir                = self.config['wikidir']
-        self.local_settings_file    = self.config['local_settings_file']
-        self.db_dump_dir            = self.config['db_dump_dir']
-        self.files_dump_dir         = self.config['files_dump_dir']
+        self.workdir                    = self.config['workdir']
+        self.wikidir                    = self.config['wikidir']
+        self.local_settings_file        = self.config['local_settings_file']
 
-        self.backup_max_retry_num   = self.config['backup_max_retry_num']
+        self.mysqldump_dir              = self.config['mysqldump_dir']
+        self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
+        self.mysqldump_compression      = self.config['mysqldump_compression']
+
+        self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
+        self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
+        self.mediawiki_compression          = self.config['mediawiki_compression']
+
+        self.define_file_name_retry_num = self.config['define_file_name_retry_num']
+        self.encoding                   = self.config['encoding']
+
+        if self.define_file_name_retry_num < 0:
+            self.define_file_name_retry_num = 0
 
 
     def execute(self):
@@ -61,7 +83,42 @@ class BackupMediawiki:
             print("Creating directory " + self.workdir)
             os.makedirs(self.workdir)
 
-        print("workdir: " + self.config['workdir'])
+        for retry_count in range(self.define_file_name_retry_num + 1):
+            date_suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+            self.backup_local_settings_file = os.path.join(
+                    self.workdir, self.local_settings_file + "." + date_suffix)
+
+            if os.path.exists(self.backup_local_settings_file):
+                last_try_filename = self.backup_local_settings_file
+                sleep(1); continue
+
+            self.mysqldump_file = os.path.join(
+                    self.mysqldump_dir, self.mysqldump_file_prefix + "." + date_suffix)
+
+            if os.path.exists(self.mysqldump_file):
+                last_try_filename = self.mysqldump_file
+                sleep(1); continue
+
+            if os.path.exists(self.mysqldump_file + ".tar." + self.mysqldump_compression):
+                last_try_filename = self.mysqldump_file + ".tar." + self.mysqldump_compression
+                sleep(1); continue
+
+            self.mediawiki_backup_file = os.path.join(
+                    self.mediawiki_backup_dir
+                    , self.mediawiki_backup_file_prefix
+                    + "." + date_suffix + ".tar." + self.mediawiki_compression)
+
+            if os.path.exists(self.mediawiki_backup_file):
+                last_try_filename = self.mediawiki_backup_file
+                sleep(1); continue
+
+            break
+
+        # Check retry count
+        if retry_count > self.define_file_name_retry_num:
+             raise Exception("Backup is failed. File "
+                    + self.backup_local_settings_file + " is already existed.")
 
         # Backup LocalSettings
         self.backup_local_settings()
@@ -69,47 +126,38 @@ class BackupMediawiki:
         # Change the mode of the mediawiki to read only
         self.change_wiki_mode_readonly(BackupMediawiki.MODE_READONLY)
 
+        # Backup mysql data
         BackupMySQL(
             self.config,
             self.wg_db_server,
             self.wg_db_name,
             self.wg_db_user,
             self.wg_db_password,
-            self.db_dump_dir,
+            self.mysqldump_file,
             default_character_set=self.default_character_set
         ).execute()
 
-        # BackupMySQL(
-        #     self.wg_db_server,
-        #     self.wg_db_name,
-        #     self.wg_db_user,
-        #     self.wg_db_password,
-        #     None
-        # ).execute()
-
-
         # Backup mediawiki file data
+        BackupMediawikiFiles(
+            self.config,
+            self.mediawiki_backup_file
+        ).execute()
+
+        # Restore LocalSettings if succeeded
+        shutil.copyfile(self.backup_local_settings_file, self.current_local_settings_file)
+        os.remove(self.backup_local_settings_file)
+
 
     def backup_local_settings(self):
         """
         Backup LocalSettings.php in workdir.
         """
 
-        for retry_count in range(5):
-            date_suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        retry_count                         = -1
+        last_try_filename                   = None
+        self.current_local_settings_file    = os.path.join(
+                                                    self.wikidir, self.local_settings_file)
 
-            self.current_local_settings_file = os.path.join(
-                    self.wikidir, self.local_settings_file)
-            self.backup_local_settings_file = os.path.join(
-                    self.workdir, self.local_settings_file + "." + date_suffix)
-
-            if not os.path.exists(self.backup_local_settings_file):
-                break
-            elif retry_count == self.backup_max_try_num:  # Retry over
-                raise Exception("Backup " + self.current_local_settings_file
-                        + " is failed. File " + self.backup_local_settings_file + " is already existed.")
-
-            time.sleep(1)
 
         # Copy LocalSettings.php to workdir. Throw Exception when copy failed
         shutil.copyfile(self.current_local_settings_file, self.backup_local_settings_file)
