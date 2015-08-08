@@ -8,6 +8,7 @@ import yaml
 
 from lib.BackupMySQL import BackupMySQL
 from lib.BackupMediawikiFiles import BackupMediawikiFiles
+from lib.Mail import Mail
 
 class BackupMediawiki:
 
@@ -57,26 +58,41 @@ class BackupMediawiki:
         with open("./conf/default.yaml", 'r') as f:
             self.config = yaml.load(f.read())
 
-        self.workdir                    = self.config['workdir']
-        self.wikidir                    = self.config['wikidir']
-        self.local_settings_file        = self.config['local_settings_file']
+        self.workdir                        = self.config['workdir']
+        self.wikidir                        = self.config['wikidir']
+        self.local_settings_file            = self.config['local_settings_file']
 
-        self.mysqldump_dir              = self.config['mysqldump_dir']
-        self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
-        self.mysqldump_compression      = self.config['mysqldump_compression']
+        self.mysqldump_dir                  = self.config['mysqldump_dir']
+        self.mysqldump_file_prefix          = self.config['mysqldump_file_prefix']
+        self.mysqldump_compression          = self.config['mysqldump_compression']
 
         self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
         self.mediawiki_compression          = self.config['mediawiki_compression']
 
-        self.define_file_name_retry_num = self.config['define_file_name_retry_num']
-        self.encoding                   = self.config['encoding']
+        self.define_file_name_retry_num     = self.config['define_file_name_retry_num']
 
         if self.define_file_name_retry_num < 0:
             self.define_file_name_retry_num = 0
 
 
     def execute(self):
+        try:
+            self.backup_resources()
+        except Exception:
+            # Send mail if some error occured
+            mail = Mail()
+            mail.send()
+        finally:
+            # Restore LocalSettings if succeeded
+            if not self.backup_local_settings_file == None:
+                print("Restoreing LocalSettings file")
+                shutil.copyfile(
+                        self.backup_local_settings_file, self.current_local_settings_file)
+                os.remove(self.backup_local_settings_file)
+
+
+    def backup_resources(self):
 
         # Creating work dir
         if not os.path.exists(self.workdir):
@@ -143,9 +159,6 @@ class BackupMediawiki:
             self.mediawiki_backup_file
         ).execute()
 
-        # Restore LocalSettings if succeeded
-        shutil.copyfile(self.backup_local_settings_file, self.current_local_settings_file)
-        os.remove(self.backup_local_settings_file)
 
 
     def backup_local_settings(self):
@@ -157,7 +170,6 @@ class BackupMediawiki:
         last_try_filename                   = None
         self.current_local_settings_file    = os.path.join(
                                                     self.wikidir, self.local_settings_file)
-
 
         # Copy LocalSettings.php to workdir. Throw Exception when copy failed
         shutil.copyfile(self.current_local_settings_file, self.backup_local_settings_file)
@@ -183,25 +195,21 @@ class BackupMediawiki:
                 match = self.reg_wg_db_server.search(last_line)
                 if match:
                     self.wg_db_server = match.group(1)
-                    # print("Server: " + self.wg_db_server)
                     continue
 
                 match = self.reg_wg_db_name.search(last_line)
                 if match:
                     self.wg_db_name = match.group(1)
-                    # print("DB Name: " + self.wg_db_name)
                     continue
 
                 match = self.reg_wg_db_user.search(last_line)
                 if match:
                     self.wg_db_user = match.group(1)
-                    # print("DB User: " + self.wg_db_user)
                     continue
 
                 match = self.reg_default_character_set.search(last_line)
                 if match:
                     self.default_character_set = match.group(1)
-                    print("Default character set: " + self.default_character_set)
                     continue
 
                 match = self.reg_wg_db_password.search(last_line)
@@ -211,7 +219,6 @@ class BackupMediawiki:
 
                 match = self.reg_wg_readonly.search(last_line)
                 if match:
-                    # print("Read Only Message: " + match.group(1))
                     read_only_matched = True
                     continue
 
