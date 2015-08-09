@@ -42,3 +42,28 @@ mediawiki_backup_generation: 30
 # Retry num for determin backup file suffix
 define_file_name_retry_num: 5
 
+#-----------------------------------------------------------
+# About mail
+#-----------------------------------------------------------
+
+# E-mail recipient.
+# An error mail will be sent when this script encountered some errors.
+# Make empty this value if you won't send email whether the script will encounter errors or not.
+mail_recipient: bar@example.com
+
+# E-mail sender.
+# This value is required if value of mail_recipient is filled.
+mail_sender: foo@example.com
+
+# MTA to send e-mail.
+# This value is required if value of mail_recipient is filled.
+mail_mta_host: localhost
+
+# Port of MTA host to send e-mail.
+# This value is required if value of mail_recipient is filled.
+mail_mta_port: 25
+
+# Password for sender authentication.
+# If this value 
+mail_sender_auth_password: 
+
