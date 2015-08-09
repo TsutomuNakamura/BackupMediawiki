@@ -14,9 +14,9 @@ class BackupMediawikiFiles(Backup):
         self.wikidir                        = config['wikidir']
         self.mediawiki_backup_dir           = config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = config['mediawiki_backup_file_prefix']
-        self.mediawiki_compression          = config['mediawiki_compression']
         self.mediawiki_backup_generation    = config['mediawiki_backup_generation']
 
+        self.mediawiki_compression          = Backup.mediawiki_backup_compression
 
     def execute(self):
         """

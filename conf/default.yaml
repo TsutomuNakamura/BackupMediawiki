@@ -66,3 +66,7 @@ mail_mta_host: localhost
 # This value is required if value of mail_recipient is filled.
 mail_mta_port: 25
 
+# Password for sender.
+# If it is not necessary to authentication, empty this value.
+mail_sender_auth_password:
+

@@ -26,9 +26,10 @@ class BackupMySQL(Backup):
 
         self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
         self.mysqldump_dir              = self.config['mysqldump_dir']
-        self.mysqldump_compression      = self.config['mysqldump_compression']
         self.mysqldump_generation_num   = self.config['mysqldump_generation_num']
 
+        self.mysqldump_compression      = Backup.mediawiki_backup_compression
+        self.mysqldump_extension        = Backup.mediawiki_backup_extension
 
     def execute(self):
         """

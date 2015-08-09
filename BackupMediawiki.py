@@ -9,6 +9,7 @@ import traceback
 
 from lib.BackupMySQL import BackupMySQL
 from lib.BackupMediawikiFiles import BackupMediawikiFiles
+from lib.Backup import Backup
 from lib.Mail import Mail
 
 class BackupMediawiki:
@@ -35,13 +36,14 @@ class BackupMediawiki:
 
         self.mysqldump_dir                  = self.config['mysqldump_dir']
         self.mysqldump_file_prefix          = self.config['mysqldump_file_prefix']
-        self.mysqldump_compression          = self.config['mysqldump_compression']
 
         self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
-        self.mediawiki_compression          = self.config['mediawiki_compression']
 
         self.define_file_name_retry_num     = self.config['define_file_name_retry_num']
+
+        self.current_local_settings_file    = os.path.join(
+                                                    self.wikidir, self.local_settings_file)
 
         if self.define_file_name_retry_num < 0:
             self.define_file_name_retry_num = 0
@@ -90,14 +92,14 @@ class BackupMediawiki:
                 last_try_filename = self.mysqldump_file
                 sleep(1); continue
 
-            if os.path.exists(self.mysqldump_file + ".tar." + self.mysqldump_compression):
-                last_try_filename = self.mysqldump_file + ".tar." + self.mysqldump_compression
+            if os.path.exists(self.mysqldump_file + Backup.mediawiki_backup_extension):
+                last_try_filename = self.mysqldump_file + Backup.mediawiki_backup_extension
                 sleep(1); continue
 
             self.mediawiki_backup_file = os.path.join(
                     self.mediawiki_backup_dir
                     , self.mediawiki_backup_file_prefix
-                    + "." + date_suffix + ".tar." + self.mediawiki_compression)
+                    + "." + date_suffix + Backup.mediawiki_backup_extension)
 
             if os.path.exists(self.mediawiki_backup_file):
                 last_try_filename = self.mediawiki_backup_file
@@ -142,8 +144,6 @@ class BackupMediawiki:
 
         retry_count                         = -1
         last_try_filename                   = None
-        self.current_local_settings_file    = os.path.join(
-                                                    self.wikidir, self.local_settings_file)
 
         # Copy LocalSettings.php to workdir. Throw Exception when copy failed
         shutil.copyfile(self.current_local_settings_file, self.backup_local_settings_file)
