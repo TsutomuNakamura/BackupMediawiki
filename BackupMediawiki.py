@@ -5,6 +5,7 @@ import re
 import datetime
 import time
 import yaml
+import traceback
 
 from lib.BackupMySQL import BackupMySQL
 from lib.BackupMediawikiFiles import BackupMediawikiFiles
@@ -81,8 +82,11 @@ class BackupMediawiki:
             self.backup_resources()
         except Exception:
             # Send mail if some error occured
-            mail = Mail()
-            mail.send()
+            if 'mail_recipient_address' in self.config:
+                mail = Mail(self.config)
+                mail.send(
+                    os.path.basename(__file__) + " encountered an error\n"
+                    , traceback.format_exc())
         finally:
             # Restore LocalSettings if succeeded
             if not self.backup_local_settings_file == None:
