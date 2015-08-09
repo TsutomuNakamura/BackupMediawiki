@@ -42,5 +42,3 @@ mediawiki_backup_generation: 30
 # Retry num for determin backup file suffix
 define_file_name_retry_num: 5
 
-encoding: utf-8
-
