@@ -2,16 +2,6 @@ import smtplib
 
 class Mail:
 
-    recipient_address       = None
-    recipient_name          = None
-    sender_address          = None
-    sender_name             = None
-    mta_host                = None
-    mta_port                = None
-    sender_auth_password    = None
-
-    smtp                    = None
-
     def __init__(self, config):
         self.recipient_address      = config['mail_recipient_address']
         self.recipient_name         = config['mail_recipient_name'] or ""

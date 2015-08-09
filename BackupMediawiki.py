@@ -13,38 +13,9 @@ from lib.Mail import Mail
 
 class BackupMediawiki:
 
-    MODE_NORMAL     = 0
-    MODE_READONLY   = 1
-
-    # Config instance
-    config = None
-
-    # Config parameters
-    workdir                         = None
-    wikidir                         = None
-    local_settings_file             = None
-
-    backup_local_settings_file      = None
-    current_local_settings_file     = None
-
-    mysqldump_dir                   = None
-    mysqldump_file_prefix           = None
-    mysqldump_file                  = None
-    mysqldump_compression           = None
-
-    mediawiki_backup_dir            = None
-    mediawiki_backup_file_prefix    = None
-    mediawiki_backup_file           = None
-    mediawiki_compression           = None
-
-    backup_max_retry_num            = None
-
-    # DB parameters
-    wg_db_server                    = None
-    wg_db_name                      = None
-    wg_db_user                      = None
-    wg_db_password                  = None
-    default_character_set           = None
+    # Mediawiki modes
+    MODE_NORMAL                 = 0
+    MODE_READONLY               = 1
 
     # Regular expression for getting db parameters.
     reg_wg_db_server            = re.compile("^\$wgDBserver\s*=\s*\"(.*)\";\s*$")
@@ -52,7 +23,6 @@ class BackupMediawiki:
     reg_wg_db_user              = re.compile("^\$wgDBuser\s*=\s*\"(.*)\";\s*$")
     reg_wg_db_password          = re.compile("^\$wgDBpassword\s*=\s*\"(.*)\";\s*$")
     reg_default_character_set   = re.compile("^\$wgDBTableOptions\s*=\s*\".*DEFAULT CHARSET\s*=\s*([a-z0-9_]+).*\";\s*$")
-
     reg_wg_readonly             = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
 
     def __init__(self):

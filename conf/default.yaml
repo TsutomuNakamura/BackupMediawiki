@@ -17,9 +17,6 @@ mysqldump_dir: /var/mediawiki-backup/wiki/db
 # Prefix of mysqldump file
 mysqldump_file_prefix: mysql-dump
 
-# Prefix of mysqldump file
-mysqldump_compression: gz
-
 # Generation to save mysqldump
 mysqldump_generation_num: 30
 
@@ -32,9 +29,6 @@ mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
 
 # Prefix of mediawiki file
 mediawiki_backup_file_prefix: mediawiki-backup
-
-# Compression method of mediawiki files backup
-mediawiki_compression: gz
 
 # Generation to save mediawiki backup
 mediawiki_backup_generation: 30

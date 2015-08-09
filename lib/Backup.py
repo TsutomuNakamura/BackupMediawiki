@@ -5,6 +5,8 @@ import os
 class Backup:
     __metaclass__ = ABCMeta
 
+    mediawiki_backup_extension = ".tar.gz"
+
     @abstractmethod
     def execute(self):
         pass
