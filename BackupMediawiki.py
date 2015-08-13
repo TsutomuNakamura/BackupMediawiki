@@ -60,12 +60,19 @@ class BackupMediawiki:
         try:
             self.backup_resources()
         except Exception:
+            # Replace mysqldump password if existed
+            stack = re.sub('\-\-password=.*\-\-default\-character\-set='
+                    , '--password=?????\', \'--default-charcter-set='
+                    , traceback.format_exc()
+                    , flags=re.MULTILINE)
+            print(stack)
+
             # Send mail if some error occured
             if 'mail_recipient_address' in self.config:
                 mail = Mail(self.config)
                 mail.send(
                     os.path.basename(__file__) + " encountered an error\n"
-                    , traceback.format_exc())
+                    , stack)
         finally:
             # Restore LocalSettings if succeeded
             if not self.backup_local_settings_file == None:
@@ -141,7 +148,6 @@ class BackupMediawiki:
             self.config,
             self.mediawiki_backup_file
         ).execute()
-
 
 
     def backup_local_settings(self):

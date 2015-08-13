@@ -20,6 +20,9 @@ mysqldump_file_prefix: mysql-dump
 # Generation to save mysqldump
 mysqldump_generation_num: 30
 
+# Timeout for mysqldump command
+mysqldump_timeout_sec: 300
+
 #-----------------------------------------------------------
 # About mediawiki files
 #-----------------------------------------------------------
@@ -44,7 +47,6 @@ define_file_name_retry_num: 5
 # An error mail will be sent when this script encountered some errors.
 # Make empty this value if you won't send email whether the script will encounter errors or not.
 #mail_recipient_address: bar@example.com
-mail_recipient_address:
 
 # E-mail recipient name.
 # This value is optional.

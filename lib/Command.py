@@ -41,10 +41,10 @@ class Command:
             proc = Popen(command, stdout=f, stderr=PIPE)
 
             try:
-                dummy, errout = proc.communicate()
-            except Alarm as e:
+                dummy, errout = proc.communicate(timeout=0)
+            except Exception as e:
                 proc.kill()
-                print(str(e))
+                raise e
 
             retcode = proc.returncode
 
