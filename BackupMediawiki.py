@@ -5,44 +5,21 @@ import re
 import datetime
 import time
 import yaml
+import traceback
 
 from lib.BackupMySQL import BackupMySQL
 from lib.BackupMediawikiFiles import BackupMediawikiFiles
+from lib.Backup import Backup
+from lib.Mail import Mail
 
 class BackupMediawiki:
 
-    MODE_NORMAL     = 0
-    MODE_READONLY   = 1
+    # Mediawiki modes
+    MODE_NORMAL                 = 0
+    MODE_READONLY               = 1
 
-    # Config instance
-    config = None
-
-    # Config parameters
-    workdir                         = None
-    wikidir                         = None
-    local_settings_file             = None
-
-    backup_local_settings_file      = None
-    current_local_settings_file     = None
-
-    mysqldump_dir                   = None
-    mysqldump_file_prefix           = None
-    mysqldump_file                  = None
-    mysqldump_compression           = None
-
-    mediawiki_backup_dir            = None
-    mediawiki_backup_file_prefix    = None
-    mediawiki_backup_file           = None
-    mediawiki_compression           = None
-
-    backup_max_retry_num            = None
-
-    # DB parameters
-    wg_db_server                    = None
-    wg_db_name                      = None
-    wg_db_user                      = None
-    wg_db_password                  = None
-    default_character_set           = None
+    # Path to LocalSettings file
+    backup_local_settings_file  = None
 
     # Regular expression for getting db parameters.
     reg_wg_db_server            = re.compile("^\$wgDBserver\s*=\s*\"(.*)\";\s*$")
@@ -50,33 +27,62 @@ class BackupMediawiki:
     reg_wg_db_user              = re.compile("^\$wgDBuser\s*=\s*\"(.*)\";\s*$")
     reg_wg_db_password          = re.compile("^\$wgDBpassword\s*=\s*\"(.*)\";\s*$")
     reg_default_character_set   = re.compile("^\$wgDBTableOptions\s*=\s*\".*DEFAULT CHARSET\s*=\s*([a-z0-9_]+).*\";\s*$")
-
     reg_wg_readonly             = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
 
     def __init__(self):
-        with open("./conf/default.yaml", 'r') as f:
+
+        config_file_path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "conf/default.yaml")
+
+        with open(config_file_path, 'r') as f:
             self.config = yaml.load(f.read())
 
-        self.workdir                    = self.config['workdir']
-        self.wikidir                    = self.config['wikidir']
-        self.local_settings_file        = self.config['local_settings_file']
+        self.workdir                        = self.config['workdir']
+        self.wikidir                        = self.config['wikidir']
+        self.local_settings_file            = self.config['local_settings_file']
 
-        self.mysqldump_dir              = self.config['mysqldump_dir']
-        self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
-        self.mysqldump_compression      = self.config['mysqldump_compression']
+        self.mysqldump_dir                  = self.config['mysqldump_dir']
+        self.mysqldump_file_prefix          = self.config['mysqldump_file_prefix']
 
         self.mediawiki_backup_dir           = self.config['mediawiki_backup_dir']
         self.mediawiki_backup_file_prefix   = self.config['mediawiki_backup_file_prefix']
-        self.mediawiki_compression          = self.config['mediawiki_compression']
 
-        self.define_file_name_retry_num = self.config['define_file_name_retry_num']
-        self.encoding                   = self.config['encoding']
+        self.define_file_name_retry_num     = self.config['define_file_name_retry_num']
+
+        self.current_local_settings_file    = os.path.join(
+                                                    self.wikidir, self.local_settings_file)
 
         if self.define_file_name_retry_num < 0:
             self.define_file_name_retry_num = 0
 
 
     def execute(self):
+        try:
+            self.backup_resources()
+        except Exception:
+            # Replace mysqldump password if existed
+            stack = re.sub('\-\-password=.*\-\-default\-character\-set='
+                    , '--password=?????\', \'--default-charcter-set='
+                    , traceback.format_exc()
+                    , flags=re.MULTILINE)
+            print(stack)
+
+            # Send mail if some error occured
+            if 'mail_recipient_address' in self.config:
+                mail = Mail(self.config)
+                mail.send(
+                    os.path.basename(__file__) + " encountered an error\n"
+                    , stack)
+        finally:
+            # Restore LocalSettings if succeeded
+            if not self.backup_local_settings_file == None:
+                print("Restoreing LocalSettings file")
+                shutil.copyfile(
+                        self.backup_local_settings_file, self.current_local_settings_file)
+                os.remove(self.backup_local_settings_file)
+
+
+    def backup_resources(self):
 
         # Creating work dir
         if not os.path.exists(self.workdir):
@@ -100,14 +106,14 @@ class BackupMediawiki:
                 last_try_filename = self.mysqldump_file
                 sleep(1); continue
 
-            if os.path.exists(self.mysqldump_file + ".tar." + self.mysqldump_compression):
-                last_try_filename = self.mysqldump_file + ".tar." + self.mysqldump_compression
+            if os.path.exists(self.mysqldump_file + Backup.mediawiki_backup_extension):
+                last_try_filename = self.mysqldump_file + Backup.mediawiki_backup_extension
                 sleep(1); continue
 
             self.mediawiki_backup_file = os.path.join(
                     self.mediawiki_backup_dir
                     , self.mediawiki_backup_file_prefix
-                    + "." + date_suffix + ".tar." + self.mediawiki_compression)
+                    + "." + date_suffix + Backup.mediawiki_backup_extension)
 
             if os.path.exists(self.mediawiki_backup_file):
                 last_try_filename = self.mediawiki_backup_file
@@ -143,10 +149,6 @@ class BackupMediawiki:
             self.mediawiki_backup_file
         ).execute()
 
-        # Restore LocalSettings if succeeded
-        shutil.copyfile(self.backup_local_settings_file, self.current_local_settings_file)
-        os.remove(self.backup_local_settings_file)
-
 
     def backup_local_settings(self):
         """
@@ -155,9 +157,6 @@ class BackupMediawiki:
 
         retry_count                         = -1
         last_try_filename                   = None
-        self.current_local_settings_file    = os.path.join(
-                                                    self.wikidir, self.local_settings_file)
-
 
         # Copy LocalSettings.php to workdir. Throw Exception when copy failed
         shutil.copyfile(self.current_local_settings_file, self.backup_local_settings_file)
@@ -183,25 +182,21 @@ class BackupMediawiki:
                 match = self.reg_wg_db_server.search(last_line)
                 if match:
                     self.wg_db_server = match.group(1)
-                    # print("Server: " + self.wg_db_server)
                     continue
 
                 match = self.reg_wg_db_name.search(last_line)
                 if match:
                     self.wg_db_name = match.group(1)
-                    # print("DB Name: " + self.wg_db_name)
                     continue
 
                 match = self.reg_wg_db_user.search(last_line)
                 if match:
                     self.wg_db_user = match.group(1)
-                    # print("DB User: " + self.wg_db_user)
                     continue
 
                 match = self.reg_default_character_set.search(last_line)
                 if match:
                     self.default_character_set = match.group(1)
-                    print("Default character set: " + self.default_character_set)
                     continue
 
                 match = self.reg_wg_db_password.search(last_line)
@@ -211,7 +206,6 @@ class BackupMediawiki:
 
                 match = self.reg_wg_readonly.search(last_line)
                 if match:
-                    # print("Read Only Message: " + match.group(1))
                     read_only_matched = True
                     continue
 

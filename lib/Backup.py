@@ -5,6 +5,9 @@ import os
 class Backup:
     __metaclass__ = ABCMeta
 
+    mediawiki_backup_compression    = "gz"
+    mediawiki_backup_extension      = ".tar." + mediawiki_backup_compression
+
     @abstractmethod
     def execute(self):
         pass
@@ -21,6 +24,6 @@ class Backup:
 
             for index in range(files_length - generation_num):
                 # Delete out dated file
-                print("Remove out dated file: " + files[index])
+                print("Remove the out dated file: " + files[index])
                 os.remove(files[index])
 

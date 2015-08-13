@@ -35,3 +35,4 @@ After finished it, you'll find backup files are located in "mediawiki_backup_dir
 ls /var/mediawiki-backup/wiki/files/mediawiki-backup*
 ls /var/mediawiki-backup/wiki/db/mysql-dump*
 ```
+

@@ -19,7 +19,7 @@ class Command:
 
 
     @staticmethod
-    def mysqldump(dump_file, user, password, db_name, character_set):
+    def mysqldump(dump_file, user, password, db_name, character_set, timeout_sec=300):
         """
         Mysqldump command utility
         """
@@ -41,10 +41,10 @@ class Command:
             proc = Popen(command, stdout=f, stderr=PIPE)
 
             try:
-                dummy, errout = proc.communicate()
-            except Alarm as e:
+                dummy, errout = proc.communicate(timeout=timeout_sec)
+            except Exception as e:
                 proc.kill()
-                print(str(e))
+                raise e
 
             retcode = proc.returncode
 

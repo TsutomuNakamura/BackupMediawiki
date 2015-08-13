@@ -8,27 +8,14 @@ from lib.Backup  import Backup
 
 class BackupMySQL(Backup):
 
-    # DB parameters
-    config                  = None
-    wg_db_server            = None
-    wg_db_name              = None
-    wg_db_user              = None
-    wg_db_password          = None
-
-    mysqldump_file          = None
-    default_character_set   = None
-
-    mysqldump_file_prefix       = None
-    mysqldump_dir               = None
-    mysqldump_compression       = None
-    mysqldump_generation_num    = None
-
     def __init__(
             self, config, wg_db_server, wg_db_name
             , wg_db_user, wg_db_password
             , mysqldump_file
             , default_character_set="binary"):
+
         self.config                 = config
+
         self.wg_db_server           = wg_db_server
         self.wg_db_name             = wg_db_name
         self.wg_db_user             = wg_db_user
@@ -39,16 +26,11 @@ class BackupMySQL(Backup):
 
         self.mysqldump_file_prefix      = self.config['mysqldump_file_prefix']
         self.mysqldump_dir              = self.config['mysqldump_dir']
-        self.mysqldump_compression      = self.config['mysqldump_compression']
         self.mysqldump_generation_num   = self.config['mysqldump_generation_num']
+        self.mysqldump_timeout_sec      = self.config['mysqldump_timeout_sec']
 
-        if self.mysqldump_compression == "gz":
-            self.mysqldump_extension = ".tar.gz"
-        elif self.mysqldump_compression == "bz2":
-            self.mysqldump_extension = ".tar.bz2"
-        else:
-            self.mysqldump_extension = ".tar"
-
+        self.mysqldump_compression      = Backup.mediawiki_backup_compression
+        self.mysqldump_extension        = Backup.mediawiki_backup_extension
 
     def execute(self):
         """
@@ -64,7 +46,8 @@ class BackupMySQL(Backup):
         print("Dumping mysql date (file=" + self.mysqldump_file + ")")
         retcode, dummy, errout = Command.mysqldump(
             self.mysqldump_file,   self.wg_db_user
-            , self.wg_db_password, self.wg_db_name, self.default_character_set)
+            , self.wg_db_password, self.wg_db_name
+            , self.default_character_set, self.mysqldump_timeout_sec)
 
         if not retcode == 0:
             raise Exception("Failed to backup DB with mysqldump"
