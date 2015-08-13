@@ -18,6 +18,9 @@ class BackupMediawiki:
     MODE_NORMAL                 = 0
     MODE_READONLY               = 1
 
+    # Path to LocalSettings file
+    backup_local_settings_file  = None
+
     # Regular expression for getting db parameters.
     reg_wg_db_server            = re.compile("^\$wgDBserver\s*=\s*\"(.*)\";\s*$")
     reg_wg_db_name              = re.compile("^\$wgDBname\s*=\s*\"(.*)\";\s*$")
