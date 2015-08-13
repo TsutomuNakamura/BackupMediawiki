@@ -24,6 +24,6 @@ class Backup:
 
             for index in range(files_length - generation_num):
                 # Delete out dated file
-                print("Remove out dated file: " + files[index])
+                print("Remove the out dated file: " + files[index])
                 os.remove(files[index])
 
