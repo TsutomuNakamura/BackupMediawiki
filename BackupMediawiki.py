@@ -30,7 +30,11 @@ class BackupMediawiki:
     reg_wg_readonly             = re.compile("^\$wgReadOnly\s*=\s*[\"'](.*)[\"'];\s*$")
 
     def __init__(self):
-        with open("./conf/default.yaml", 'r') as f:
+
+        config_file_path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "conf/default.yaml")
+
+        with open(config_file_path, 'r') as f:
             self.config = yaml.load(f.read())
 
         self.workdir                        = self.config['workdir']
