@@ -1,5 +1,3 @@
-# (Under construction)
-
 # BackupMediawiki
 This is a script to backup your Mediawiki that is constructed by MySQL or Maria DB.
 
