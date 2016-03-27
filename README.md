@@ -2,9 +2,9 @@
 This is a script to backup your Mediawiki that is constructed by MySQL or Maria DB.
 
 # Requirement
-python3
-MySQL or MariaDB (Required mysqldump)
-Linux (This script is tested on Linux of distro Fedora22)
+* python3
+* MySQL or MariaDB (Required mysqldump)
+* Linux (This script is tested on Linux of distro Fedora22 and Fedora23)
 
 # Setting
 Open and edit default.yaml for your environment.
