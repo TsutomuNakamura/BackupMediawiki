@@ -212,11 +212,11 @@ class BackupMediawiki:
         # Check variables
         if self.wg_db_server == None:
             raise Exception("Cannot read the parameter $wgDBserver in " + local_settings_file)
-        elif self.wg_db_name == None:
+        if self.wg_db_name == None:
             raise Exception("Cannot read the parameter $wgDBname in " + local_settings_file)
-        elif self.wg_db_user == None:
+        if self.wg_db_user == None:
             raise Exception("Cannot read the parameter $wgDBuser in " + local_settings_file)
-        elif self.wg_db_password == None:
+        if self.wg_db_password == None:
             raise Exception("Cannot read the parameter $wgDBpassword in " + local_settings_file)
 
         if read_only_matched == False:
