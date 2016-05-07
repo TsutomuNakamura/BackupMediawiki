@@ -1,74 +1,48 @@
-# Location of backup working directory
-workdir: /var/mediawiki-backup/wiki/
-
+#-----------------------------------------------------------
+# General configuration options.
+#
+# These options may be changed frequently due to your environment.
+#-----------------------------------------------------------
 # Location of mediawiki web application
-wikidir: /var/www/html/wiki/
+wikidir: /var/www/wiki/
 
 # Setting file name of mediawiki
 local_settings_file: LocalSettings.php
 
-#-----------------------------------------------------------
-# About MySQL or MariaDB data
-#-----------------------------------------------------------
-
 # Location of mysql db backup
 mysqldump_dir: /var/mediawiki-backup/wiki/db
 
+# Location of mediawiki files backup
+mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
+
+#-----------------------------------------------------------
+# About MySQL or MariaDB backup data.
+#
+# The credentials of MySQL or MariaDB will be acquired from
+# the file that assigned 'local_settings_file'
+# (generally, LocalSettings.php).
+#-----------------------------------------------------------
 # Prefix of mysqldump file
 mysqldump_file_prefix: mysql-dump
 
 # Generation to save mysqldump
-mysqldump_generation_num: 30
+mysqldump_generation_num: 720
 
 # Timeout for mysqldump command
 mysqldump_timeout_sec: 300
 
 #-----------------------------------------------------------
-# About mediawiki files
+# About mediawiki backup files or others
 #-----------------------------------------------------------
-
-# Location of mediawiki files backup
-mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
-
 # Prefix of mediawiki file
 mediawiki_backup_file_prefix: mediawiki-backup
 
 # Generation to save mediawiki backup
-mediawiki_backup_generation: 30
+mediawiki_backup_generation: 720
 
 # Retry num for determin backup file suffix
 define_file_name_retry_num: 5
 
-#-----------------------------------------------------------
-# About mail
-#-----------------------------------------------------------
-
-# E-mail recipient address.
-# An error mail will be sent when this script encountered some errors.
-# Make empty this value if you won't send email whether the script will encounter errors or not.
-#mail_recipient_address: bar@example.com
-
-# E-mail recipient name.
-# This value is optional.
-mail_recipient_name: Someone's mail address
-
-# E-mail sender.
-# This value is required if value of mail_recipient is filled.
-mail_sender_address: server-admin@example.com
-
-# E-mail sender name.
-# This value is optional
-mail_sender_name: Server administrator
-
-# MTA to send e-mail.
-# This value is required if value of mail_recipient is filled.
-mail_mta_host: localhost
-
-# Port of MTA host to send e-mail.
-# This value is required if value of mail_recipient is filled.
-mail_mta_port: 25
-
-# Password for sender.
-# If it is not necessary to authentication, empty this value.
-mail_sender_auth_password:
+# Location of backup working directory
+workdir: /var/tmp/mediawiki
 
