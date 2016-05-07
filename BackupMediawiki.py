@@ -6,6 +6,7 @@ import datetime
 import time
 import yaml
 import traceback
+import glob
 
 from lib.BackupMySQL import BackupMySQL
 from lib.BackupMediawikiFiles import BackupMediawikiFiles
@@ -84,10 +85,14 @@ class BackupMediawiki:
 
     def backup_resources(self):
 
-        # Creating work dir
+        # Creating or clearning work directory
         if not os.path.exists(self.workdir):
             print("Creating directory " + self.workdir)
             os.makedirs(self.workdir)
+        else:
+            for f in glob.glob(os.path.join(self.workdir, self.local_settings_file) + '*'):
+                print("Removing: " + f)
+                os.remove(f)
 
         for retry_count in range(self.define_file_name_retry_num + 1):
             date_suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
