@@ -1,7 +1,7 @@
 #-----------------------------------------------------------
 # General configuration options.
 #
-# These options may be changed frequently due to your environment.
+# You might change these options due to your environment.
 #-----------------------------------------------------------
 # Location of mediawiki web application
 wikidir: /var/www/wiki/
