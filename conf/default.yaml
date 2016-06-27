@@ -26,7 +26,7 @@ mediawiki_backup_dir: /var/mediawiki-backup/wiki/files
 mysqldump_file_prefix: mysql-dump
 
 # Generation to save mysqldump
-mysqldump_generation_num: 720
+mysqldump_generation_num: 60
 
 # Timeout for mysqldump command
 mysqldump_timeout_sec: 300
@@ -38,7 +38,7 @@ mysqldump_timeout_sec: 300
 mediawiki_backup_file_prefix: mediawiki-backup
 
 # Generation to save mediawiki backup
-mediawiki_backup_generation: 720
+mediawiki_backup_generation: 60
 
 # Retry num for determin backup file suffix
 define_file_name_retry_num: 5
