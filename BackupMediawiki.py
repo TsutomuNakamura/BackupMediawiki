@@ -115,10 +115,12 @@ class BackupMediawiki:
                 last_try_filename = self.mysqldump_file + Backup.mediawiki_backup_extension
                 sleep(1); continue
 
+            # self.mediawiki_backup_file = os.path.join(
+            #         self.mediawiki_backup_dir
+            #         , self.mediawiki_backup_file_prefix
+            #         + "." + date_suffix + Backup.mediawiki_backup_extension)
             self.mediawiki_backup_file = os.path.join(
-                    self.mediawiki_backup_dir
-                    , self.mediawiki_backup_file_prefix
-                    + "." + date_suffix + Backup.mediawiki_backup_extension)
+                    self.mediawiki_backup_dir, self.mediawiki_backup_file_prefix + "." + date_suffix)
 
             if os.path.exists(self.mediawiki_backup_file):
                 last_try_filename = self.mediawiki_backup_file

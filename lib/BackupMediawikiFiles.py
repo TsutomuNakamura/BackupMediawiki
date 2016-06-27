@@ -17,6 +17,7 @@ class BackupMediawikiFiles(Backup):
         self.mediawiki_backup_generation    = config['mediawiki_backup_generation']
 
         self.mediawiki_compression          = Backup.mediawiki_backup_compression
+        self.mediawiki_extension            = Backup.mediawiki_backup_extension
 
     def execute(self):
         """
@@ -27,13 +28,16 @@ class BackupMediawikiFiles(Backup):
             print("Creating directory -> " + self.mediawiki_backup_dir)
             os.makedirs(self.mediawiki_backup_dir)
 
-        print("Backup mediawiki files from "
-            + self.wikidir + " to " + self.mediawiki_backup_file)
+        print("Backup mediawiki files from " + self.wikidir
+                + " to " + self.mediawiki_backup_file + self.mediawiki_extension)
         with tarfile.open(
-            self.mediawiki_backup_file, "w:" + self.mediawiki_compression) as tar:
+            self.mediawiki_backup_file + self.mediawiki_extension
+            , "w:" + self.mediawiki_compression) as tar:
+            tar.dereference = True
 
             # Throws exception if archiving is failed
-            tar.add(self.wikidir, arcname=os.path.basename(self.wikidir))
+            tar.add(self.wikidir, arcname=os.path.basename(self.mediawiki_backup_file))
+
         print("Backuping mediawiki files to " + self.mediawiki_backup_file)
 
         # Remove out dated backup files
