@@ -65,7 +65,7 @@ class BackupMySQL(Backup):
         with tarfile.open(
                 self.mysqldump_file + self.mysqldump_extension
                     , "w:" + self.mysqldump_compression) as tar:
-            tar.add(self.mysqldump_file)
+            tar.add(self.mysqldump_file, arcname=os.path.basename(self.mysqldump_file))
 
         os.remove(self.mysqldump_file)
 
