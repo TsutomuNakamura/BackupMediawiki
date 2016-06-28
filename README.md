@@ -12,24 +12,24 @@ Each meaning of parameters is explained in config file.
 
 # How to use this script
 Clone this repository on your environment.
-```bash
+``` console
 git clone https://github.com/TsutomuNakamura/BackupMediawiki.git
 ```
 
 Change current working directory and edit ./conf/default.yaml file as needed.
-```bash
+``` console
 cd BackupMediawiki
 vim ./conf/default.yaml
 ```
 
 Run BackupMediawiki.py.
-```bash
+``` console
 ./BackupMediawiki.py
 ```
 
 After finished it, you'll find backup files are located in "mediawiki_backup_dir" and "mysqldump_dir" that assigned in default.yaml.
 
-```bash
+``` console
 ls /var/mediawiki-backup/wiki/files/mediawiki-backup*
 ls /var/mediawiki-backup/wiki/db/mysql-dump*
 ```
